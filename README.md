@@ -152,6 +152,10 @@ sh get-docker.sh
 # test Docker intallation
 docker version
 docker run hello-world
+# Setting docker to rootless execution
+groupadd docker
+usermod -aG docker vagrant
+su -c "docker run hello-world" vagrant
 ```
 
 - [Install cri-dockerd](https://github.com/Mirantis/cri-dockerd)

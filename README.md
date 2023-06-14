@@ -109,7 +109,7 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-
 install minikube-linux-amd64 /usr/local/bin/minikube
 ```
 
-Install From Package Manager(apt)
+Install From .deb Package
 
 ```bash
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
@@ -153,7 +153,6 @@ sh get-docker.sh
 docker version
 docker run hello-world
 # Setting docker to rootless execution
-groupadd docker
 usermod -aG docker vagrant
 su -c "docker run hello-world" vagrant
 ```
@@ -186,6 +185,7 @@ show Kubernetes resources
 
 ```bash
 kubectl get nodes 
+kubectl get pods -A
 ```
 
 ---

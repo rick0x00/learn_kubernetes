@@ -8,6 +8,7 @@ Vagrant.configure("2") do |config|
             v.gui = false
             v.cpus = 2
             v.memory = 2048
+            v.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
         end
     end
 end

@@ -78,6 +78,9 @@ Install bash-completions
 
 ```bash
 apt install bash-completion
+kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
+chmod a+r /etc/bash_completion.d/kubectl
+
 echo "source /usr/share/bash-completion/bash_completion" >> ~/.bashrc
 echo 'source <(kubectl completion bash)' >> ~/.bashrc
 # reload bash
@@ -191,6 +194,9 @@ kubectl get pods -A
 ```
 
 ---
+---
+[Hello Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/)
+
 Create a Deployment
 
 ---
@@ -205,6 +211,13 @@ View the Deployment
 
 ```bash
 kubectl get deployments
+```
+
+---
+View the Pod
+
+```bash
+kubectl get pods
 ```
 
 ---
@@ -242,8 +255,50 @@ kubectl get services
 Test Web service for deployment
 
 ```bash
+# on CLI
 curl $(minikube service hello-node --url)
+# on Web browser
+minikube service hello-node
 ```
+
+---
+Enable Addons
+
+---
+List the currently supported addons
+
+```bash
+minikube addons list
+```
+
+---
+Enable an addon, for example, metrics-server
+
+```bash
+minikube addons enable metrics-server
+```
+
+---
+View the Pod and Service you created by installing that addon
+
+```bash
+kubectl get pod,svc -n kube-system
+```
+
+---
+Clean up
+
+---
+
+```bash
+minikube addons disable metrics-server
+kubectl delete service hello-node
+kubectl delete deployment hello-node
+minikube stop
+# Optional
+minikube delete
+```
+
 
 ---
 Creating a POD

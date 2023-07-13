@@ -1,4 +1,4 @@
-curl http://"$(minikube ip):8080"# BASIC COMMANDS
+# BASIC COMMANDS
 
 ---
 

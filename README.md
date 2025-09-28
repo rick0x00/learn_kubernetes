@@ -6,18 +6,18 @@ Kubernetes is an open-source container orchestration system for automating softw
 
 To start the study, follow the instructions
 
-- [Provisioning Base LAB](/provisioning_base_lab.md)
+- [Provisioning Base LAB](/DOCS/provisioning_base_lab.md)
 
-- [Install Kubernetes](/install_k8s.md)
+- [Install Kubernetes](/DOCS/install_k8s.md)
 
-- [Install Minikube](/install_minikube.md)
+- [Install Minikube](/DOCS/install_minikube.md)
 
-- [Install Container Runtime](/install_container_runtime.md)
+- [Install Container Runtime](/DOCS/install_container_runtime.md)
 
 ## Let's get started
 
-[Start Guide with minikube](/start_guide_with_minikube.md)
+[Start Guide with minikube](/DOCS/start_guide_with_minikube.md)
 
-[Basic Commands](/basic_commands.md)
+[Basic Commands](/DOCS/basic_commands.md)
 
-[More Commands](/more_commands.md)
+[More Commands](/DOCS/more_commands.md)

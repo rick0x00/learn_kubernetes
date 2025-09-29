@@ -1,0 +1,121 @@
+# Taskfile.yml
+
+# docs: https://taskfile.dev/
+
+version: '3'
+
+vars:
+  KIND_VERSION: v0.23.0
+  KUBECTL_VERSION: v1.30.2
+  CLUSTER_NAME: cluster-dev
+
+tasks:
+  default:
+    desc: "Lists all available tasks."
+    cmds:
+      - task --list-all
+
+  full-setup:
+    desc: "Performs a full setup: installs tools, creates Kind cluster, and installs Ingress."
+    deps: [ingress:install]
+
+  install:all:
+    desc: "Installs all required tools: Docker, kubectl, and kind."
+    # The order of dependencies is important.
+    deps: [install:docker, install:kubectl, install:kind, install:helm, install:helmfile]
+
+  install:docker:
+    desc: "Installs Docker Engine inside WSL (requires sudo)."
+    cmds:
+      - curl -fsSL https://get.docker.com | bash
+    status:
+      # This task is up-to-date if the 'docker' command exists
+      - command -v docker
+
+  install:kubectl:
+    desc: "Installs the Kubernetes CLI (kubectl)."
+    cmds:
+      - |
+        cd /tmp/
+        curl -LO "https://dl.k8s.io/release/{{.KUBECTL_VERSION}}/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+        task install:kubectl:autocomplete
+    status:
+      - command -v kubectl
+
+  install:kubectl:autocomplete:
+    desc: "Installs the autocomplete of kubectl."
+    cmds:
+      - |
+        apt install bash-completion
+        kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
+        chmod a+r /etc/bash_completion.d/kubectl
+        echo "source /usr/share/bash-completion/bash_completion" >> ~/.bashrc
+        echo 'source <(kubectl completion bash)' >> ~/.bashrc
+    status:
+      - complete | grep -q kubectl
+
+  install:kind:
+    desc: "Installs Kind."
+    cmds:
+      - |
+        cd /tmp/
+        curl -Lo ./kind "https://kind.sigs.k8s.io/dl/{{.KIND_VERSION}}/kind-linux-amd64"
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/kind
+    status:
+      - command -v kind
+
+  install:helm:
+    desc: "Installs the Helm CLI using the official script."
+    cmds:
+      - |
+        cd /tmp/
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    status:
+      - command -v helm
+
+  install:helmfile:
+    desc: "Install the Helmfile CLI Using official script."
+    cmds:
+      - |
+        curl -L https://github.com/helmfile/helmfile/releases/download/v0.165.0/helmfile_0.165.0_linux_amd64.tar.gz | tar xz
+        sudo mv helmfile /usr/local/bin/
+        sudo chmod +x  /usr/local/bin/helmfile
+    status:
+      - command -v helmfile
+
+
+  kind:cluster-up:
+    desc: "Creates a Kind cluster named '{{.CLUSTER_NAME}}'."
+    deps: [install:all]
+    cmds:
+      - kind create cluster --name {{.CLUSTER_NAME}} --config ./ingress/kind-config-ingress.yaml
+    status:
+      # This task is up-to-date if grep finds the cluster name.
+      # If grep fails (cluster not found), the task will run.
+      - 'kind get clusters | grep -q "^{{.CLUSTER_NAME}}$"'
+
+  kind:cluster-down:
+    desc: "Deletes the Kind cluster."
+    cmds:
+      - kind delete cluster --name {{.CLUSTER_NAME}}
+
+  kind:cluster-info:
+    desc: "Shows cluster info and current nodes."
+    cmds:
+      - kubectl cluster-info --context kind-{{.CLUSTER_NAME}}
+      - kubectl get nodes
+
+  ingress:install:
+    desc: "Installs the NGINX Ingress Controller in the Kind cluster."
+    deps: [kind:cluster-up]
+    cmds: 
+      - kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+      - echo "Waiting for ingress-nginx-controller to be ready..."
+      - kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller
+          --timeout=120s
+      - echo "Ingress NGINX Controller installed and ready!"
+    status:
+      - 'kubectl get pods -n ingress-nginx | grep ingress-nginx-controller | grep Running'
